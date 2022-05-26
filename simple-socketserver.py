@@ -2,30 +2,44 @@
 import socket
 import sys
 import argparse
+from datetime import datetime
 
-def logger(port):
+def printLog(address, saveLog):
+    print("[+] IP Logged " + address)
+    if(saveLog):
+            now = datetime.now()
+            with open("loggedIps.txt", "a") as f:
+                f.write("(" + sys.argv[0] + ")[" + now.strftime("%d/%m/%Y %H:%M:%S") + "] " +address + "\n")
+
+def logger(port, saveToFile):
     s = socket.socket()
     
     try:
         s.bind(("0.0.0.0", port))
+    except OSError as e:
+        print("Port is already in use, try another.")
+        sys.exit(1)
     except Exception as e:
-         print(e)
+        print(e)
     
-    print("Comenzando el logeo de IPs...")
+    print("Starting IPLogger...")
     while True:
         try:
             s.listen(5)
-            address = s.accept()
+            conn, address = s.accept()
             
-            print("[+] IP Logged " + str(address[0]))
-        
-        except:
+            printLog(str(address[0]), saveToFile)
+            
+        except Exception as e:
             pass
+            print(e)
             print("Exiting. . .")
             sys.exit(0)
             
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs='?', type=int, help="Listen port of the socket server. (Default 8080)", default=9999)
+    parser.add_argument('-s', '--save', action='store_true', help='Save log to file', dest='save')
 
-    logger(port=parser.parse_args().port)
+
+    logger(port=parser.parse_args().port, saveToFile=parser.parse_args().save)
