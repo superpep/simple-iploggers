@@ -4,14 +4,17 @@ import sys
 import argparse
 from datetime import datetime
 
-def printLog(address, saveLog):
+DEFAULT_PORT = 9999
+parser = argparse.ArgumentParser()
+
+def printLog(address):
     print("[+] IP Logged " + address)
-    if(saveLog):
+    if(parser.parse_args().save):
             now = datetime.now()
             with open("loggedIps.txt", "a") as f:
                 f.write("(" + sys.argv[0] + ")[" + now.strftime("%d/%m/%Y %H:%M:%S") + "] " +address + "\n")
 
-def logger(port, saveToFile):
+def logger(port):
     s = socket.socket()
     
     try:
@@ -28,7 +31,7 @@ def logger(port, saveToFile):
             s.listen(5)
             conn, address = s.accept()
             
-            printLog(str(address[0]), saveToFile)
+            printLog(str(address[0]))
             
         except Exception as e:
             pass
@@ -37,9 +40,8 @@ def logger(port, saveToFile):
             sys.exit(0)
             
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("port", nargs='?', type=int, help="Listen port of the socket server. (Default 8080)", default=9999)
+    parser.add_argument("port", nargs='?', type=int, help="Listen port of the web server. (Default " + str(DEFAULT_PORT) + ")", default=DEFAULT_PORT)
     parser.add_argument('-s', '--save', action='store_true', help='Save log to file', dest='save')
 
 
-    logger(port=parser.parse_args().port, saveToFile=parser.parse_args().save)
+    logger(port=parser.parse_args().port)
